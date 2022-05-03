@@ -28,9 +28,9 @@ public class Player : MonoBehaviour
  
         transform.position += moveVec * speed * Time.deltaTime * (walkDown ? 0.3f : 1f);
 
-
-
         animator.SetBool("isRun", moveVec != Vector3.zero);
         animator.SetBool("isWalk", walkDown);
+
+        transform.LookAt(transform.position + moveVec);
     }
 }
