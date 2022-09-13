@@ -21,6 +21,7 @@ public class Player : MonoBehaviour     //Entity
     bool wDown;
     bool jDown;
     bool isJump;
+    bool isDodge;
     public float jPower;
 
     public float health = 100;
@@ -31,6 +32,7 @@ public class Player : MonoBehaviour     //Entity
     private StateMachine<States, StateDriverUnity> fsm;
 
     Vector3 moveVec;
+    Vector3 dodgeVec;
 
     Rigidbody rb;
 
@@ -53,6 +55,8 @@ public class Player : MonoBehaviour     //Entity
         Turn();
 
         Jump();
+
+        Dodge();
     }
 
     void Init_Enter()
@@ -72,6 +76,9 @@ public class Player : MonoBehaviour     //Entity
     {
         moveVec = new Vector3(hAxis, 0, vAxis).normalized;
 
+        if(isDodge)
+            moveVec = dodgeVec;
+
         transform.position += moveVec * speed * Time.deltaTime * (wDown ? 0.3f : 1f);
 
         animator.SetBool("isRun", moveVec != Vector3.zero);
@@ -85,13 +92,31 @@ public class Player : MonoBehaviour     //Entity
 
     void Jump()
     {
-        if (jDown && !isJump)
+        if (jDown && moveVec == Vector3.zero && !isJump && !isDodge)
         {
             rb.AddForce(Vector3.up * jPower, ForceMode.Impulse);
             animator.SetBool("isJump", true);
             animator.SetTrigger("doJump");
             isJump = true;
         }
+    }
+    void Dodge()
+    {
+        if (jDown && moveVec != Vector3.zero && !isJump && !isDodge)
+        {
+            dodgeVec = moveVec;
+            speed *= 2;
+            animator.SetTrigger("doDodge");
+            isDodge = true;
+
+            Invoke("DodgeOut", 0.4f);
+        }
+    }
+
+    void DodgeOut()
+    {
+        speed *= 0.5f;
+        isDodge = false;
     }
 
     void OnCollisionEnter(Collision collision)
